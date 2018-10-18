@@ -19,16 +19,24 @@ app.get('/api/:col', urlencodedParser, (req, res) => {
     if(!req.params.col) 
         return res.sendStatus(400);
     let msg = `get all documents of collection: ${req.params.col}`;
-    modelRunner.processRequest(req, res);
+    var results = modelRunner.processRequest(req, res);
+    results.then(records => {
+        console.log(records);
+        res.send(records);
+    }).catch(ex => {
+        console.error(ex);
+        res.send(ex.message);
+    });
     res.send(msg);
+    console.log(results);
 });
 
 app.get('/api/:col/:id', urlencodedParser, (req, res) => {
     if(!req.params.col) 
         return res.sendStatus(400);
     let msg = `get a record of collection: ${req.params.col}, id: ${req.params.id}`;
-    modelRunner.processRequest(req, res);
-    res.send(msg);
+    var results = modelRunner.processRequest(req, res);
+    res.send(results);
 });
 
 var port = process.env.PORT;
