@@ -1,14 +1,17 @@
+var _ = require("lodash");
+
 String.prototype.capitalize = function() {
     return this.charAt(0).toUpperCase() + this.slice(1);
 }
 
 var processRequest = (req, res) => {
     var col = req.params.col;
-    var body = req.body;
-    var mongoose = require('mongoose');
+    var body = _.pick(req.body, Object.keys(req.body));
+    var {mongoose} = require('../db/mongoose');
     require('../models/' + col);
-    var model = mongoose.models[col.capitalize()];
-    //console.log("process request: ", col, mongoose, model, body);
+    console.log("mongoose: ", mongoose, col.capitalize());
+    var model = mongoose.model(col.capitalize());
+    console.log("process request: ", col, body);
     switch(req.method) {
         case "GET":
             if(req.params.id) {
@@ -17,7 +20,8 @@ var processRequest = (req, res) => {
             return model.find();
         break;
         case "POST":
-            model.insert(body);
+            console.log("request body:", body);
+            return model.create(body);
         break;
         case "PUT":
         break;

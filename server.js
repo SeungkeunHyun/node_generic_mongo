@@ -11,32 +11,46 @@ app.post('/api/:col', urlencodedParser, (req, res) => {
     if(!req.body)
         return res.sendStatus(400);
     console.log(req.params.col);
-    modelRunner.processRequest(req, res);
-    res.sendStatus(200);
+    var newRow = modelRunner.processRequest(req, res);
+    newRow.then(nr=> {
+        res.send(nr);
+         return;
+    }).catch(ex => {
+        console.log(ex);
+        res.status(500).send(ex.message);
+    });
 });
 
 app.get('/api/:col', urlencodedParser, (req, res) => {
     if(!req.params.col) 
         return res.sendStatus(400);
     let msg = `get all documents of collection: ${req.params.col}`;
-    var results = modelRunner.processRequest(req, res);
-    results.then(records => {
-        console.log(records);
-        res.send(records);
-    }).catch(ex => {
-        console.error(ex);
-        res.send(ex.message);
+    var query = modelRunner.processRequest(req, res);
+    query.exec((err, docs) => {
+        console.log("entered then", err, docs);
+        if(err) {
+            res.sendStatus(400);
+            return;
+        }
+        console.log(docs);
+        res.send(docs);
     });
-    res.send(msg);
-    console.log(results);
 });
 
 app.get('/api/:col/:id', urlencodedParser, (req, res) => {
     if(!req.params.col) 
         return res.sendStatus(400);
     let msg = `get a record of collection: ${req.params.col}, id: ${req.params.id}`;
-    var results = modelRunner.processRequest(req, res);
-    res.send(results);
+    var query = modelRunner.processRequest(req, res);
+    console.log('query', query);
+    query.exec((err, docs) => {
+        console.log("entered then");
+        if(err) {
+            res.sendStatus(400);
+            return;
+        }
+        res.send(docs);
+    });
 });
 
 var port = process.env.PORT;
