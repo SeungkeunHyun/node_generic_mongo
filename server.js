@@ -1,11 +1,43 @@
 require('./config/config.js');
-var app = require('express')();
+const app = require('express')();
+//var flash = require('connect-flash');
+const passport = require('./config/passport');
+const session = require('express-session');
+const isLoggedIn = require('./middlewares/authenticate.js');
 var bodyParser = require('body-parser');
 var urlencodedParser = bodyParser.urlencoded({extended: false});
 var modelRunner = require('./controllers/run-model');
-console.log(modelRunner);
 
+app.use(passport.initialize());
+app.use(passport.session());
 app.use(bodyParser.json());
+//app.use(flash())
+
+app.get('/', urlencodedParser, (req, res)=> {
+    res.send("<h1>Welcome</h1>");
+})
+
+app.get('/login', isLoggedIn, (req, res) => {
+    if(req.isAuthenticated()) {
+        res.send("Use this api with current auth");
+        return;
+    } 
+    res.send("<h1>Please login to use this service</h1>");
+});
+
+app.get('/profile', isLoggedIn, (req, res) => {
+    if(req.isAuthenticated()) {
+        res.send(req.user);
+        return;
+    } 
+    res.send(`<h1>Hi, ${req.user.name}</h1>`);
+});
+
+app.post('/login', passport.authenticate('local-signin', {session:false}), (req,res) => {
+    res.set('x-auth', req.user.token);
+    res.status(200).json(req.user);
+});
+
 
 app.post('/api/:col', urlencodedParser, (req, res) => {
     if(!req.body)
@@ -37,7 +69,7 @@ app.get('/api/:col', urlencodedParser, (req, res) => {
     });
 });
 
-app.get('/api/:col/:id', urlencodedParser, (req, res) => {
+app.get('/api/:col/:id', isLoggedIn, (req, res) => {
     if(!req.params.col) 
         return res.sendStatus(400);
     let msg = `get a record of collection: ${req.params.col}, id: ${req.params.id}`;
