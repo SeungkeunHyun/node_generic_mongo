@@ -2,7 +2,7 @@ require('./config/config.js');
 const app = require('express')();
 const passport = require('./config/passport');
 const session = require('express-session');
-const isLoggedIn = require('./middlewares/authenticate.js');
+const authMW = require('./middlewares/authenticate.js');
 var bodyParser = require('body-parser');
 var urlencodedParser = bodyParser.urlencoded({extended: false});
 var modelRunner = require('./controllers/run-model');
@@ -15,7 +15,7 @@ app.get('/', urlencodedParser, (req, res)=> {
     res.send("<h1>Welcome</h1>");
 })
 
-app.get('/login', isLoggedIn, (req, res) => {
+app.get('/login', authMW.isLoggedIn, (req, res) => {
     if(req.isAuthenticated()) {
         res.send("Use this api with current auth");
         return;
@@ -23,7 +23,7 @@ app.get('/login', isLoggedIn, (req, res) => {
     res.send("<h1>Please login to use this service</h1>");
 });
 
-app.get('/profile', isLoggedIn, (req, res) => {
+app.get('/profile', authMW.isLoggedIn, (req, res) => {
     if(req.isAuthenticated()) {
         res.send(req.user);
         return;
@@ -37,7 +37,7 @@ app.post('/login', passport.authenticate('local-signin', {session:false}), (req,
 });
 
 
-app.post('/api/:col', urlencodedParser, (req, res) => {
+app.post('/api/:col', authMW.verifyToken, (req, res) => {
     if(!req.body)
         return res.sendStatus(400);
     console.log(req.params.col);
@@ -51,7 +51,7 @@ app.post('/api/:col', urlencodedParser, (req, res) => {
     });
 });
 
-app.get('/api/:col', urlencodedParser, (req, res) => {
+app.get('/api/:col', authMW.verifyToken, (req, res) => {
     if(!req.params.col) 
         return res.sendStatus(400);
     let msg = `get all documents of collection: ${req.params.col}`;
@@ -67,7 +67,7 @@ app.get('/api/:col', urlencodedParser, (req, res) => {
     });
 });
 
-app.get('/api/:col/:id', isLoggedIn, (req, res) => {
+app.get('/api/:col/:id', authMW.verifyToken, (req, res) => {
     if(!req.params.col) 
         return res.sendStatus(400);
     let msg = `get a record of collection: ${req.params.col}, id: ${req.params.id}`;
