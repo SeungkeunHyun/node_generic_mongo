@@ -1,6 +1,5 @@
 require('./config/config.js');
 const app = require('express')();
-//var flash = require('connect-flash');
 const passport = require('./config/passport');
 const session = require('express-session');
 const isLoggedIn = require('./middlewares/authenticate.js');
@@ -11,7 +10,6 @@ var modelRunner = require('./controllers/run-model');
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(bodyParser.json());
-//app.use(flash())
 
 app.get('/', urlencodedParser, (req, res)=> {
     res.send("<h1>Welcome</h1>");
