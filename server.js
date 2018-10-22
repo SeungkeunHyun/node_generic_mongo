@@ -1,7 +1,6 @@
 require("./config/config.js");
 const app = require("express")();
 const passport = require("./config/passport");
-const session = require("express-session");
 const authMW = require("./middlewares/authenticate.js");
 var bodyParser = require("body-parser");
 var urlencodedParser = bodyParser.urlencoded({
@@ -75,9 +74,7 @@ app.get("/api/:col", authMW.verifyToken, (req, res) => {
 
 app.get("/api/:col/:id", authMW.verifyToken, (req, res) => {
 	if (!req.params.col) return res.sendStatus(400);
-	let msg = `get a record of collection: ${req.params.col}, id: ${
-    req.params.id
-  }`;
+	let msg = `get a record of collection: ${req.params.col}, id: ${req.params.id}`;
 	var query = modelRunner.processRequest(req, res);
 	console.log("query", query);
 	query.exec((err, docs) => {
