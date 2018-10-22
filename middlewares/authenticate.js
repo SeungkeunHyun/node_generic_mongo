@@ -15,6 +15,7 @@ module.exports =  { isLoggedIn: (req, res, next) => {
         }
         try {
             var info = jwt.verify(token, process.env.JWT_SECRET);
+            console.log("request's passport: ", req.passport);
             next();
         } catch(ex) {
             next(ex);
